@@ -1,8 +1,8 @@
 import uuid
-from datetime import datetime
 
 from django.apps import apps
 from django.db import models
+from django.utils import timezone
 
 from django_classic.enums.model_enums import InsertType
 
@@ -28,8 +28,8 @@ class ClassicModel(models.Model):
     insert_type = models.SmallIntegerField(default=InsertType.Created.value)
 
     # Auditable timestamp
-    update_timestamp = models.DateTimeField(default=datetime.now)
-    create_timestamp = models.DateTimeField(editable=False, default=datetime.now)
+    update_timestamp = models.DateTimeField(default=timezone.now)
+    create_timestamp = models.DateTimeField(editable=False, default=timezone.now)
 
     class Meta:
         abstract = True
@@ -39,7 +39,7 @@ class ClassicModel(models.Model):
 
     def save(self, update_time=True, **kwargs):
         if update_time:
-            self.update_timestamp = datetime.now()
+            self.update_timestamp = timezone.now()
         super(ClassicModel, self).save()
 
     def delete(self, **kwargs):
