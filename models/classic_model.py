@@ -28,8 +28,8 @@ class ClassicModel(models.Model):
     insert_type = models.SmallIntegerField(default=InsertType.Created.value)
 
     # Auditable timestamp
-    update_timestamp = models.DateTimeField(default=timezone.localtime)
-    create_timestamp = models.DateTimeField(editable=False, default=timezone.localtime)
+    update_time = models.DateTimeField(default=timezone.localtime)
+    create_time = models.DateTimeField(editable=False, default=timezone.localtime)
 
     class Meta:
         abstract = True
@@ -39,7 +39,7 @@ class ClassicModel(models.Model):
 
     def save(self, update_time=True, **kwargs):
         if update_time:
-            self.update_timestamp = timezone.localtime()
+            self.update_time = timezone.localtime()
         super(ClassicModel, self).save()
 
     def delete(self, **kwargs):
