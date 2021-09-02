@@ -34,6 +34,10 @@ class ClassicModel(models.Model):
     class Meta:
         abstract = True
 
+    @classmethod
+    def build_key(cls, pk):
+        return '{}_{}'.format(cls.__name__, pk)
+
     def clean_fields(self, exclude=None):
         return super(ClassicModel, self).clean_fields(exclude)
 
