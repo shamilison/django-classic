@@ -22,8 +22,6 @@ class ClassicTokenSerializer(AuthTokenSerializer):
     def create(self, validated_data):
         super(ClassicTokenSerializer, self).create(validated_data)
 
-    device_id = serializers.CharField(max_length=200, required=False, default='')
-
     def validate(self, attrs):
         username = attrs.get('username')
         password = attrs.get('password')

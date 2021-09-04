@@ -1,10 +1,15 @@
+__author__ = 'shamil_sakib'
+
 from rest_framework import exceptions
-from rest_framework.authentication import TokenAuthentication, get_authorization_header
+from rest_framework.authentication import TokenAuthentication, get_authorization_header, SessionAuthentication
 from rest_framework.exceptions import APIException
 
-__author__ = 'Mahmud'
-
 from django_classic.extras.classic_cache import ClassicCache
+
+
+class ClassicSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        return True
 
 
 class ClassicTokenAuthentication(TokenAuthentication):
@@ -37,11 +42,11 @@ class ClassicTokenAuthentication(TokenAuthentication):
         if not auth or len(auth) == 0 or auth[0].lower() != b'token':
             return None
         if len(auth) <= 1:
-            msg = 'Invalid token header. No credentials provided.'
-            raise exceptions.AuthenticationFailed(msg)
+            message = 'Invalid token header. No credentials provided.'
+            raise exceptions.AuthenticationFailed(message)
         elif len(auth) > 2:
-            msg = 'Invalid token header. Token string should not contain spaces.'
-            raise exceptions.AuthenticationFailed(msg)
+            message = 'Invalid token header. Token string should not contain spaces.'
+            raise exceptions.AuthenticationFailed(message)
         try:
             _auth_key = auth[1].decode() if isinstance(auth[1], bytes) else auth[1]
             _auth_user, _token = self.authenticate_credentials(auth_key=_auth_key)

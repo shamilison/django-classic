@@ -19,6 +19,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework.response import Response
 
+from django_classic.extras.classic_authentication import ClassicTokenAuthentication, ClassicSessionAuthentication
 from django_classic.extras.classic_renderers import ClassicJSONRenderer
 from django_classic.serializers.classic_serializers import ClassicTokenSerializer
 
@@ -26,6 +27,8 @@ log = logging.getLogger(__name__)
 
 
 class ClassicAPIViewSet(viewsets.ModelViewSet):
+    authentication_classes = (ClassicTokenAuthentication, ClassicSessionAuthentication,)
+    # permission_classes = (IsAuthorized,)
     renderer_classes = (ClassicJSONRenderer, BrowsableAPIRenderer)
     parser_classes = (MultiPartParser, FormParser, JSONParser,)
 
@@ -101,7 +104,7 @@ class ClassicVersionAPIViewSet(ClassicAPIViewSet):
             file_name = '{}_serializer.py'.format(model_file_name)
             # getting the exact serializer module
             module_spec = importlib.util.spec_from_file_location(
-                model_name + "Serializer", os.path.join(file_path,file_name))
+                model_name + "Serializer", os.path.join(file_path, file_name))
             serializer_module = importlib.util.module_from_spec(module_spec)
             module_spec.loader.exec_module(serializer_module)
             return getattr(serializer_module, model_name + "Serializer")
