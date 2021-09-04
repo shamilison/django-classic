@@ -39,8 +39,6 @@ class ClassicTokenSerializer(AuthTokenSerializer):
             raise APIException(_("User has been deleted from the system."))
         if not _user.is_active:
             raise APIException(_("User has been deactivated."))
-        if not _user.organization.is_active:
-            raise APIException(_("User's organization has been deactivated."))
 
         user = authenticate(username=username, password=password)
         if not user.is_active:
