@@ -1,10 +1,13 @@
 __author__ = 'shamilsakib'
 
 from django.contrib.auth import authenticate
+from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.exceptions import APIException
+
+from django_classic.models import ClassicModel
 
 
 class ClassicTokenSerializer(AuthTokenSerializer):
@@ -46,3 +49,30 @@ class ClassicTokenSerializer(AuthTokenSerializer):
 
         attrs['user'] = user
         return attrs
+
+
+class ClassicModelSerializer(serializers.ModelSerializer):
+
+    def __init__(self, *args, fields=None, context=None, data=None, **kwargs):
+        super(ClassicModelSerializer, self).__init__(*args, context=context, **kwargs)
+
+    def to_representation(self, instance):
+        return super(ClassicModelSerializer, self).to_representation(instance)
+
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            return super(ClassicModelSerializer, self).update(instance, validated_data)
+
+    def save(self, **kwargs):
+        return super(ClassicModelSerializer, self).save(**kwargs)
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            return super(ClassicModelSerializer, self).create(validated_data)
+
+    def mutate(self, **kwargs):
+        return self.instance.mutate_to()
+
+    class Meta:
+        model = ClassicModel
+        read_only_fields = ['uuid', 'identifier', 'is_locked', 'update_time', 'create_time']

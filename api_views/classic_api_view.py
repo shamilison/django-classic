@@ -1,5 +1,6 @@
 __author__ = 'shamilsakib'
 
+import importlib.util
 import logging
 import os
 import re
@@ -13,6 +14,7 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.exceptions import APIException
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework.response import Response
@@ -34,27 +36,23 @@ class ClassicAPIViewSet(viewsets.ModelViewSet):
     def finalize_response(self, request, response, *args, **kwargs):
         return super(ClassicAPIViewSet, self).finalize_response(request, response, *args, **kwargs)
 
-    def metadata(self, request):
-        ret = super(ClassicAPIViewSet, self).metadata(request)
-        return ret
-
     def options(self, request, *args, **kwargs):
-        return super().options(request, *args, **kwargs)
+        return super(ClassicAPIViewSet, self).options(request, *args, **kwargs)
 
     def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
+        response = super(ClassicAPIViewSet, self).list(request, *args, **kwargs)
         return response
 
     def get_queryset(self, **kwargs):
         queryset = self.model.objects.all()
-        # queryset = super(ClassicAPIViewSet, self).get_queryset(queryset=queryset, **kwargs)
         return queryset
 
 
 class ClassicVersionAPIViewSet(ClassicAPIViewSet):
+    version_pattern = re.compile("^\d+$")
 
-    def model_serializer_finder(seld, model_class, version, *args, **kwargs):
-        version_path = "v_" + str(version)
+    def model_serializer_finder(self, model_class, version, *args, **kwargs):
+        version_path = "v{}".format(str(version))
         app_path = None
         try:
             # getting the app name
@@ -98,23 +96,23 @@ class ClassicVersionAPIViewSet(ClassicAPIViewSet):
             difference = ""
         try:
             # Creating the exact file path
-            file_path = str(app_path) + '/serializers/' + difference + \
-                        str(version_path) + '/' + model_file_name + "_serializer.py"
+            file_path = "{}/serializers/{}/{}".format(
+                app_path, version_path, difference)
+            file_name = '{}_serializer.py'.format(model_file_name)
             # getting the exact serializer module
-            import importlib.util
-            spec = importlib.util.spec_from_file_location(model_name + "Serializer", file_path)
-            serializer_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(serializer_module)
+            module_spec = importlib.util.spec_from_file_location(
+                model_name + "Serializer", os.path.join(file_path,file_name))
+            serializer_module = importlib.util.module_from_spec(module_spec)
+            module_spec.loader.exec_module(serializer_module)
             return getattr(serializer_module, model_name + "Serializer")
         except Exception as error:
-            log.exception(error)
+            raise APIException(error)
 
     def get_serializer_class(self):
-        version_pattern = re.compile("^\d+$")
         # getting the api version name
         version = None
         model_class = self.model
-        if self.request.version and version_pattern.match(self.request.version):
+        if self.request.version and self.version_pattern.match(self.request.version):
             try:
                 version = int(self.request.version)
             except Exception as error:

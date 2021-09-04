@@ -1,16 +1,12 @@
 __author__ = 'shamilsakib'
 
-import hashlib
 from collections import OrderedDict
 
-from django.db.models import Count
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.pagination import _positive_int, CursorPagination, _reverse_ordering
 from rest_framework.response import Response
 from rest_framework.utils.urls import remove_query_param
 from rest_framework.utils.urls import replace_query_param
-
-from django_classic.extras.classic_cache import ClassicCache
 
 
 class ClassicLimitOffsetAPIPagination(LimitOffsetPagination):
@@ -110,37 +106,25 @@ class ClassicVersioningAPIPagination(ClassicLimitOffsetAPIPagination):
             return len(queryset)
 
 
-def cached_count(queryset, request):
-    _count_cache_key = request.path + '_' + str(request.user.pk)
-    _skip_keys = ['offset', 'limit', 'sort', 'downloaded']
-    _query_filters = [key + value for key, value in request.GET.items() if key not in _skip_keys]
-    _count_cache_key += '_'.join(_query_filters)
-    _count_cache_key = 'query-count:' + str(request.c_organization.id) + '_' + queryset.model.__name__ + '_' + \
-                       hashlib.md5(_count_cache_key.encode('utf8')).hexdigest()
-
-    # return existing value, if any
-    _count = ClassicCache.get_by_key(key=_count_cache_key)
-    if _count is not None:
-        return int(_count)
-    # cache new value
-    _count = queryset.aggregate(_count=Count('pk'))['_count']
-    # Save to cache with 1 hour timeout
-    ClassicCache.set_by_key(key=_count_cache_key, value=_count, expiry=60 * 60)
-    return _count
-
-
 class ClassicCursorAPIPagination(CursorPagination):
-    cursor_query_param = 'offset'
     page_size = 200
-    ordering = 'last_updated'
+    ordering = 'update_time'
     limit_query_param = 'limit'
-    limit_query_description = 'Number of results to return per page.'
-    downloaded_query_param = 'downloaded'
+    cursor_query_param = 'offset'
     sort_query_param = 'sort'
+    downloaded_query_param = 'downloaded'
+    limit_query_description = 'Number of results to return per page.'
+
+    def __init__(self):
+        self.version = 'v1'
+        self.downloaded = 0
+        self.base_url = self.cursor = self.page = None
+        self.next_position = self.previous_position = None
+        self.current_page_len = self.has_next = self.has_previous = None
 
     def get_page_size(self, request):
         if request.GET.get('disable_pagination', False):
-            return 9999999
+            return 500
         if self.limit_query_param:
             try:
                 return _positive_int(
@@ -149,7 +133,6 @@ class ClassicCursorAPIPagination(CursorPagination):
                 )
             except (KeyError, ValueError):
                 pass
-
         return self.page_size
 
     def get_downloaded(self, request):
@@ -162,9 +145,19 @@ class ClassicCursorAPIPagination(CursorPagination):
 
     def get_sorting(self, request):
         try:
-            return (request.query_params[self.sort_query_param],)
+            return request.query_params[self.sort_query_param],
         except (KeyError, ValueError):
-            return self.ordering
+            return self.ordering,
+
+    def decode_cursor(self, request):
+        """
+        Given a request with a cursor, return a `Cursor` instance.
+        """
+        # Determine if we have a cursor, and if so then decode it.
+        encoded = request.query_params.get(self.cursor_query_param)
+        if not encoded or encoded == '0':
+            return None
+        return super(ClassicCursorAPIPagination, self).decode_cursor(request)
 
     def paginate_queryset(self, queryset, request, view=None):
         self.page_size = self.get_page_size(request)
@@ -175,7 +168,6 @@ class ClassicCursorAPIPagination(CursorPagination):
         self.downloaded = self.get_downloaded(request)
 
         self.base_url = request.get_full_path()
-        self.ordering = self.get_ordering(request, queryset, view)
         self.ordering = self.get_sorting(request)
 
         self.cursor = self.decode_cursor(request)
@@ -189,8 +181,6 @@ class ClassicCursorAPIPagination(CursorPagination):
             queryset = queryset.order_by(*_reverse_ordering(self.ordering))
         else:
             queryset = queryset.order_by(*self.ordering)
-
-        self.count = cached_count(queryset, request)
 
         # If we have a cursor with a fixed position then filter by that.
         if current_position is not None:
@@ -250,27 +240,13 @@ class ClassicCursorAPIPagination(CursorPagination):
 
         return self.page
 
-    def decode_cursor(self, request):
-        """
-        Given a request with a cursor, return a `Cursor` instance.
-        """
-        # Determine if we have a cursor, and if so then decode it.
-        encoded = request.query_params.get(self.cursor_query_param)
-        if not encoded or encoded == '0':
-            return None
-        return super(ClassicCursorAPIPagination, self).decode_cursor(request)
-
     def get_paginated_response(self, data):
         _downloaded = self.downloaded + self.current_page_len
         return Response(OrderedDict([
-            ('count', self.count),
             ('version', self.version),
             ('next', self.get_next_link()),
             ('previous', self.get_previous_link()),
-            ('remaining_count', self.count - _downloaded if self.count > _downloaded else 0),
-            ('next_offset', _downloaded if self.count > _downloaded else 0),
             ('current_page', int(self.downloaded / self.page_size) + 1),
-            ('total_page', int(self.count / self.page_size) + (0 if (self.count % self.page_size == 0) else 1)),
             ('results', data)
         ]))
 
