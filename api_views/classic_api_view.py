@@ -10,7 +10,7 @@ from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import status, mixins, viewsets
+from rest_framework import status, mixins
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
@@ -19,12 +19,13 @@ from rest_framework.response import Response
 
 from django_classic.extras.classic_authentication import ClassicTokenAuthentication, ClassicSessionAuthentication
 from django_classic.extras.classic_renderers import ClassicJSONRenderer
+from django_classic.mixins.classic_view_mixin import ClassicGetViewMixin
 from django_classic.serializers.classic_serializers import ClassicTokenSerializer
 
 log = logging.getLogger(__name__)
 
 
-class ClassicAPIGetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class ClassicAPIGetViewSet(ClassicGetViewMixin):
     authentication_classes = (ClassicTokenAuthentication, ClassicSessionAuthentication,)
     # permission_classes = (IsAuthorized,)
     renderer_classes = (ClassicJSONRenderer, BrowsableAPIRenderer)
@@ -45,8 +46,7 @@ class ClassicAPIGetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, vie
         return response
 
     def get_queryset(self, **kwargs):
-        queryset = self.model.objects.all()
-        return queryset
+        return super(ClassicAPIGetViewSet, self).get_queryset(**kwargs)
 
 
 class ClassicVersionAPIViewSet(ClassicAPIGetViewSet):
