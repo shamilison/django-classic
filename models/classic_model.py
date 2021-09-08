@@ -41,6 +41,14 @@ class ClassicModel(models.Model):
     def clean_fields(self, exclude=None):
         return super(ClassicModel, self).clean_fields(exclude)
 
+    @classmethod
+    def order_by(cls, **kwargs):
+        return ['update_time', ]
+
+    @classmethod
+    def datetime_fields(cls, **kwargs):
+        return ['update_time', 'create_time', ]
+
     def save(self, update_time=True, **kwargs):
         if update_time:
             self.update_time = timezone.localtime()

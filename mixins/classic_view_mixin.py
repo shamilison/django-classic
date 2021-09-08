@@ -24,20 +24,16 @@ class ClassicGetViewMixin(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
         """
         search_fields = list()
         if query_params.get('s', '0') == '1':
-            ignore = ['s', 'paginate_by', 'sort', 'page', 'page-size', 'depth', 'expand', 'format', 'authkey',
-                      'disable-page', 'operator', 'csrfmiddlewaretoken']
+            ignore = ['s', 'sort', 'offset', 'limit', 'downloaded', 'page', 'page-size', 'depth', 'expand', 'format',
+                      'disable-limit', 'csrfmiddlewaretoken']
             for key in [key for key in query_params if key not in ignore]:
                 _value = list()
                 _values = list(filter(lambda x: x.strip() != '', query_params.get(key).split(',')))
-                if key in self.model.get_datetime_fields():
+                if key in self.model.datetime_fields():
                     for _val in _values:
-                        try:
-                            _val = int(_val)
-                        except Exception:
-                            _val = datetime.strptime(_val, '%d/%m/%Y-%H:%M:%S')
-                        _value.append(str(_val))
+                        _value.append(datetime.strptime(_val, '%Y-%m-%dT%H:%M:%S.%fZ%z').strftime('%Y-%m-%dT%H:%M:%S.%fZ%z'))
                     if len(_value) == 1:
-                        _value.append(timezone.localtime().strftime('%d/%m/%Y-%H:%M:%S'))
+                        _value.append(timezone.localtime().strftime('%Y-%m-%dT%H:%M:%S.%fZ%z'))
                 else:
                     _value = _values
                 search_fields.append((key, _value))
@@ -102,7 +98,7 @@ class ClassicGetViewMixin(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
                     entry_query = self._build_orm_query([int(float(q)) for q in query_strings], [prefix + prop],
                                                         range=len(query_strings) > 1)
                 elif isinstance(field, (models.DateField, models.DateTimeField)):
-                    entry_query = self._build_orm_query([datetime.strptime(str(q), '%d/%m/%Y-%H:%M:%S') for q in query_strings],
+                    entry_query = self._build_orm_query([datetime.strptime(str(q), '%Y-%m-%dT%H:%M:%S.%fZ%z') for q in query_strings],
                                                         [prefix + prop],
                                                         range=len(query_strings) > 1)
                 elif isinstance(field, models.BooleanField):
@@ -156,15 +152,15 @@ class ClassicGetViewMixin(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
         if hasattr(self.model, "distinct_fields"):
             # TODO: Update with regular expression, to avoid hassle processing model name containing 'details'
             distinct_fields = [f for f in getattr(self.model, "distinct_fields")()]
-            orderables = list(distinct_fields)
+            _orderings = list(distinct_fields)
             if not order_by:
                 kwargs.update({"request": self.request})
                 order_by = self.model.default_order_by(**kwargs)
             if type(order_by) == str:
-                orderables += [order_by]
+                _orderings += [order_by]
             else:
-                orderables += list(order_by)
-            _queryset = queryset.order_by(*orderables)
+                _orderings += list(order_by)
+            _queryset = queryset.order_by(*_orderings)
             item_ids = _queryset.distinct(*distinct_fields).values_list('pk', flat=True)
             queryset = queryset.model.objects.filter(pk__in=item_ids)
 
@@ -182,7 +178,7 @@ class ClassicGetViewMixin(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
         This method is used to generate appropriate queryset for current request
         returns filtered queryset
         """
-        _user = self.request.c_user
+        _user = self.request.user
         _sort_by = self.request.GET.get('sort')
         # Assuming all objects first
         _queryset = self.model.objects.all()
@@ -238,7 +234,7 @@ class ClassicGetViewMixin(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
             _queryset = _queryset.order_by(*order_by_filter)
         else:
             kwargs.update({'request': self.request})
-            order_by = self.model.default_order_by(**kwargs)
+            order_by = self.model.order_by(**kwargs)
             if type(order_by) == str:
                 _queryset = _queryset.order_by(order_by)
             else:
