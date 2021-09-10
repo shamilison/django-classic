@@ -168,7 +168,7 @@ class ClassicCursorAPIPagination(CursorPagination):
         self.downloaded = self.get_downloaded(request)
 
         self.base_url = request.get_full_path()
-        self.ordering = self.get_sorting(request)
+        self.ordering = self.get_sorting(queryset, request)
 
         self.cursor = self.decode_cursor(request)
         if self.cursor is None:
