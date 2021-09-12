@@ -143,7 +143,7 @@ class ClassicCursorAPIPagination(CursorPagination):
         except (KeyError, ValueError):
             return 0
 
-    def get_sorting(self, request):
+    def get_sorting(self, queryset, request):
         try:
             return request.query_params[self.sort_query_param],
         except (KeyError, ValueError):
@@ -168,7 +168,7 @@ class ClassicCursorAPIPagination(CursorPagination):
         self.downloaded = self.get_downloaded(request)
 
         self.base_url = request.get_full_path()
-        self.ordering = self.get_sorting(request)
+        self.ordering = self.get_sorting(queryset, request)
 
         self.cursor = self.decode_cursor(request)
         if self.cursor is None:
