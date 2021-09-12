@@ -1,6 +1,7 @@
 __author__ = 'shamilsakib'
 
 import importlib.util
+import logging
 import os
 import re
 import sys
@@ -22,7 +23,8 @@ from django_classic.logging.classic_logger import ClassicLogger
 from django_classic.mixins.classic_view_mixin import ClassicGetViewMixin
 from django_classic.serializers.classic_serializers import ClassicTokenSerializer
 
-log = ClassicLogger(__name__)
+logging.setLoggerClass(ClassicLogger)
+logger = logging.getLogger(__name__)
 
 
 class ClassicAPIGetViewSet(ClassicGetViewMixin):
@@ -63,7 +65,7 @@ class ClassicVersionAPIViewSet(ClassicAPIGetViewSet):
             # getting the app path
             app_path = os.path.dirname(app_module.__file__)
         except Exception as error:
-            log.exception(error)
+            logger.exception(error)
         # model related data
         model_name = model_path = model_file_name = None
         try:
@@ -76,7 +78,7 @@ class ClassicVersionAPIViewSet(ClassicAPIGetViewSet):
             # extracting the model file name from the path
             model_file_name = model_path[model_path.rfind(os.sep) + 1:model_path.rfind(".")]
         except Exception as error:
-            log.exception(error)
+            logger.exception(error)
         # difference in path
         # the models directory inside the app
         app_model_path = os.path.join(app_path, "models")
