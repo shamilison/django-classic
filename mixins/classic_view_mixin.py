@@ -1,6 +1,5 @@
 __author__ = 'shamilsakib'
 
-import logging
 from datetime import datetime
 
 from django.core.exceptions import FieldDoesNotExist
@@ -10,7 +9,9 @@ from django.utils import timezone
 from pytz import timezone
 from rest_framework import viewsets, mixins
 
-log = logging.getLogger(__name__)
+from django_classic.logging.classic_logger import ClassicLogger
+
+log = ClassicLogger(__name__)
 
 
 class ClassicGetViewMixin(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):

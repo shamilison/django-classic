@@ -1,7 +1,6 @@
 __author__ = 'shamilsakib'
 
 import importlib.util
-import logging
 import os
 import re
 import sys
@@ -10,7 +9,7 @@ from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import status, mixins
+from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
@@ -19,10 +18,11 @@ from rest_framework.response import Response
 
 from django_classic.extras.classic_authentication import ClassicTokenAuthentication, ClassicSessionAuthentication
 from django_classic.extras.classic_renderers import ClassicJSONRenderer
+from django_classic.logging.classic_logger import ClassicLogger
 from django_classic.mixins.classic_view_mixin import ClassicGetViewMixin
 from django_classic.serializers.classic_serializers import ClassicTokenSerializer
 
-log = logging.getLogger(__name__)
+log = ClassicLogger(__name__)
 
 
 class ClassicAPIGetViewSet(ClassicGetViewMixin):
