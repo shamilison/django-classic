@@ -10,9 +10,10 @@ from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import status
+from rest_framework import status, viewsets, mixins
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.exceptions import APIException
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework.response import Response
@@ -27,31 +28,13 @@ logging.setLoggerClass(ClassicLogger)
 logger = logging.getLogger(__name__)
 
 
-class ClassicAPIGetViewSet(ClassicGetViewMixin):
+class ClassicVersionAPIViewSet(viewsets.GenericViewSet):
     authentication_classes = (ClassicTokenAuthentication, ClassicSessionAuthentication,)
     # permission_classes = (IsAuthorized,)
     renderer_classes = (ClassicJSONRenderer, BrowsableAPIRenderer)
     parser_classes = (MultiPartParser, FormParser, JSONParser,)
 
-    @csrf_exempt
-    def dispatch(self, request, *args, **kwargs):
-        return super(ClassicAPIGetViewSet, self).dispatch(request, *args, **kwargs)
-
-    def finalize_response(self, request, response, *args, **kwargs):
-        return super(ClassicAPIGetViewSet, self).finalize_response(request, response, *args, **kwargs)
-
-    def options(self, request, *args, **kwargs):
-        return super(ClassicAPIGetViewSet, self).options(request, *args, **kwargs)
-
-    def list(self, request, *args, **kwargs):
-        response = super(ClassicAPIGetViewSet, self).list(request, *args, **kwargs)
-        return response
-
-    def get_queryset(self, **kwargs):
-        return super(ClassicAPIGetViewSet, self).get_queryset(**kwargs)
-
-
-class ClassicVersionAPIViewSet(ClassicAPIGetViewSet):
+    model = None
     version_pattern = re.compile("^\d+$")
 
     def model_serializer_finder(self, model_class, version, *args, **kwargs):
@@ -120,6 +103,88 @@ class ClassicVersionAPIViewSet(ClassicAPIGetViewSet):
         if model_serializer:
             return model_serializer
         return super(ClassicVersionAPIViewSet, self).get_serializer_class()
+
+
+class ClassicVersionAPIGetViewSet(ClassicVersionAPIViewSet, ClassicGetViewMixin):
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super(ClassicVersionAPIGetViewSet, self).dispatch(request, *args, **kwargs)
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        return super(ClassicVersionAPIGetViewSet, self).finalize_response(request, response, *args, **kwargs)
+
+    def options(self, request, *args, **kwargs):
+        return super(ClassicVersionAPIGetViewSet, self).options(request, *args, **kwargs)
+
+    def list(self, request, *args, **kwargs):
+        response = super(ClassicVersionAPIGetViewSet, self).list(request, *args, **kwargs)
+        return response
+
+    def get_queryset(self, **kwargs):
+        return super(ClassicVersionAPIGetViewSet, self).get_queryset(**kwargs)
+
+
+class ClassicVersionAPICreateViewSet(ClassicVersionAPIViewSet, mixins.CreateModelMixin):
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super(ClassicVersionAPICreateViewSet, self).dispatch(request, *args, **kwargs)
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        return super(ClassicVersionAPICreateViewSet, self).finalize_response(request, response, *args, **kwargs)
+
+    def options(self, request, *args, **kwargs):
+        return super(ClassicVersionAPICreateViewSet, self).options(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super(ClassicVersionAPICreateViewSet, self).create(request, *args, **kwargs)
+        except Exception as error:
+            raise APIException(error)
+
+    def get_queryset(self, **kwargs):
+        return self.model.objects.all()
+
+
+class ClassicVersionAPIUpdateViewSet(ClassicVersionAPIViewSet, mixins.UpdateModelMixin):
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super(ClassicVersionAPIUpdateViewSet, self).dispatch(request, *args, **kwargs)
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        return super(ClassicVersionAPIUpdateViewSet, self).finalize_response(request, response, *args, **kwargs)
+
+    def options(self, request, *args, **kwargs):
+        return super(ClassicVersionAPIUpdateViewSet, self).options(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            return super(ClassicVersionAPIUpdateViewSet, self).update(request, *args, **kwargs)
+        except Exception as error:
+            raise APIException(error)
+
+    def get_queryset(self, **kwargs):
+        return self.model.objects.all()
+
+
+class ClassicVersionAPIDestroyViewSet(ClassicVersionAPIViewSet, mixins.DestroyModelMixin):
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super(ClassicVersionAPIDestroyViewSet, self).dispatch(request, *args, **kwargs)
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        return super(ClassicVersionAPIDestroyViewSet, self).finalize_response(request, response, *args, **kwargs)
+
+    def options(self, request, *args, **kwargs):
+        return super(ClassicVersionAPIDestroyViewSet, self).options(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            return super(ClassicVersionAPIDestroyViewSet, self).destroy(request, *args, **kwargs)
+        except Exception as error:
+            raise APIException(error)
+
+    def get_queryset(self, **kwargs):
+        return self.model.objects.all()
 
 
 class ClassicAPITokenView(ObtainAuthToken):

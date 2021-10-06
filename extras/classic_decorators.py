@@ -13,9 +13,9 @@ def decorate(*decorators):
     return register_wrapper
 
 
-def enable_api(route):
+def enable_api(route, scope=1):
     def enable_api(original_class):
-        original_class._enable_api = {'route': route}
+        original_class._enable_api = {'route': route, 'scope': scope}
         return original_class
 
     return enable_api

@@ -51,7 +51,7 @@ class ClassicTokenSerializer(AuthTokenSerializer):
 
 class ClassicModelSerializer(serializers.ModelSerializer):
 
-    def __init__(self, *args, fields=None, context=None, data=None, **kwargs):
+    def __init__(self, *args, fields=None, context=None, **kwargs):
         super(ClassicModelSerializer, self).__init__(*args, context=context, **kwargs)
 
     def to_representation(self, instance):
