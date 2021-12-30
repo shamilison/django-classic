@@ -1,10 +1,19 @@
+__author__ = 'shamil_sakib'
+
+import logging
 import uuid
 
 from django.apps import apps
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils import timezone
 
 from django_classic.enums.model_enums import InsertType
+from django_classic.enums.util_enums import ProcessingStatus
+from django_classic.logging.classic_logger import ClassicLogger
+
+logging.setLoggerClass(ClassicLogger)
+logger = logging.getLogger(__name__)
 
 get_model = apps.get_model
 
@@ -35,6 +44,47 @@ class ClassicModel(models.Model):
         abstract = True
 
     @classmethod
+    def get_unique_field_maps(cls, json_ob):
+        return {}
+
+    @classmethod
+    def insert_or_update_from_json(cls, json_ob, return_instance=False):
+        if not json_ob:
+            if return_instance:
+                return ProcessingStatus.CORRUPTED, None
+            return ProcessingStatus.CORRUPTED
+        try:
+            _unique_keys = cls.get_unique_field_maps(json_ob=json_ob)
+            if _unique_keys:
+                _instance, _is_created = cls.objects.get_or_create(**_unique_keys)
+            else:
+                _instance, _is_created = cls(), True
+            for _key in json_ob.keys():
+                setattr(_instance, _key, json_ob.get(_key))
+            _instance.save()
+            if return_instance:
+                return ProcessingStatus.INSERTED if _is_created else ProcessingStatus.UPDATED, _instance
+            return ProcessingStatus.INSERTED if _is_created else ProcessingStatus.UPDATED
+        except Exception as error:
+            logger.exception(error)
+            if return_instance:
+                return ProcessingStatus.ERROR, None
+            return ProcessingStatus.ERROR
+
+    @classmethod
+    def remove_using_json(cls, json_ob, using='pk'):
+        try:
+            if using == 'country':
+                _instance = cls.objects.get(root_id=json_ob.get('root_id'), country=json_ob.get('country'))
+            else:
+                _instance = cls.objects.get(uuid=json_ob.get('uuid'))
+            _instance.delete()
+        except ObjectDoesNotExist:
+            pass
+        except Exception as error:
+            logger.exception(error)
+
+    @classmethod
     def build_key(cls, pk):
         return '{}_{}'.format(cls.__name__, pk)
 
@@ -55,9 +105,13 @@ class ClassicModel(models.Model):
         super(ClassicModel, self).save()
 
     def delete(self, **kwargs):
-        self.deleted_level += 1
-        self.is_deleted = True
-        self.save(**kwargs)
+        if kwargs.get('hard'):
+            # Delete from the universe
+            return super(ClassicModel, self).delete()
+        else:
+            self.deleted_level += 1
+            self.is_deleted = True
+            self.save(**kwargs)
 
     def restore(self, **kwargs):
         if self.deleted_level > 0:
