@@ -28,7 +28,7 @@ class ClassicGetViewMixin(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
         search_fields = list()
         if query_params.get('s', '0') == '1':
             ignore = ['s', 'sort', 'offset', 'limit', 'downloaded', 'page', 'page-size', 'depth', 'expand', 'format',
-                      'disable-limit', 'csrfmiddlewaretoken']
+                      'disable-limit', 'disable_pagination', 'csrfmiddlewaretoken']
             for key in [key for key in query_params if key not in ignore]:
                 _value = list()
                 _values = list(filter(lambda x: x.strip() != '', query_params.get(key).split(',')))
@@ -42,7 +42,7 @@ class ClassicGetViewMixin(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
                 search_fields.append((key, _value))
         return search_fields
 
-    def _build_orm_query(self, query_string, search_fields, _in=False, range=False, **kwargs):
+    def _build_orm_query(self, query_string, search_fields, _in=False, _range=False, _bool=False, **kwargs):
         query = None  # Query to search for every search term
         # terms = normalize_query(query_string)
         if _in:
@@ -54,10 +54,19 @@ class ClassicGetViewMixin(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
                 else:
                     or_query |= q
             query = or_query
-        elif range:
+        elif _range:
             or_query = None  # Query to search for a given term in each field
             for field_name in search_fields:
                 q = Q(**{"%s__range" % field_name: tuple(query_string)})
+                if or_query is None:
+                    or_query = q
+                else:
+                    or_query |= q
+            query = or_query
+        elif _bool:
+            or_query = None  # Query to search for a given term in each field
+            for field_name in search_fields:
+                q = Q(**{"%s" % field_name: query_string[0]})
                 if or_query is None:
                     or_query = q
                 else:
@@ -105,11 +114,11 @@ class ClassicGetViewMixin(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
                                                         [prefix + prop],
                                                         range=len(query_strings) > 1)
                 elif isinstance(field, models.BooleanField):
-                    entry_query = self._build_orm_query([bool(q) for q in query_strings], [prefix + prop])
+                    entry_query = self._build_orm_query([bool(q) for q in query_strings], [prefix + prop], _bool=True)
                 else:
                     entry_query = self._build_orm_query(query_strings, [prefix + prop])
             except FieldDoesNotExist:
-                entry_query = self._build_orm_query(query_strings, [prefix + prop])
+                pass
         else:
             property_list = prop.split('.')
             field = model._meta.get_field(property_list[0])
@@ -134,9 +143,14 @@ class ClassicGetViewMixin(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
         _searched_fields = self._prepare_search_fields(query_params=query_params)
         for key, value in _searched_fields:
             if len(value) > 0:
-                entry_query = self._build_search_query(self.model, key, value)
-                if entry_query is not None:
-                    queryset = queryset.filter(entry_query)
+                if key.startswith('custom:'):
+                    if not hasattr(self.model, key.replace(':', '__') + '_search'):
+                        continue
+                    queryset = getattr(self.model, key.replace(':', '__') + '_search')(queryset, value)
+                else:
+                    entry_query = self._build_search_query(self.model, key, value)
+                    if entry_query is not None:
+                        queryset = queryset.filter(entry_query)
         return queryset
 
     def _add_sign_prefix(self, descending_sorts, field_name):
@@ -185,11 +199,8 @@ class ClassicGetViewMixin(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
         _sort_by = self.request.GET.get('sort')
         # Assuming all objects first
         _queryset = self.model.objects.all()
-
         _queryset = self._apply_search_filter(query_params=self.request.GET, queryset=_queryset, **kwargs)
-
         order_by_filter = []
-
         if _sort_by:
             _descending_sorts = {_sort_by.replace('-', ''): _sort_by.startswith('-')}
             _field_name = _sort_by.replace("-", "").replace("render_", "")
