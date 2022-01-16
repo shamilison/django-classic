@@ -29,8 +29,10 @@ logger = logging.getLogger(__name__)
 
 
 class ClassicVersionAPIViewSet(viewsets.GenericViewSet):
-    authentication_classes = (ClassicTokenAuthentication, ClassicSessionAuthentication,)
+    # authentication_classes = (ClassicTokenAuthentication, ClassicSessionAuthentication,)
     # permission_classes = (IsAuthorized,)
+    authentication_classes = ()
+    permission_classes = ()
     renderer_classes = (ClassicJSONRenderer, BrowsableAPIRenderer)
     parser_classes = (MultiPartParser, FormParser, JSONParser,)
 
@@ -62,8 +64,7 @@ class ClassicVersionAPIViewSet(viewsets.GenericViewSet):
             model_file_name = model_path[model_path.rfind(os.sep) + 1:model_path.rfind(".")]
         except Exception as error:
             logger.exception(error)
-        # difference in path
-        # the models directory inside the app
+        # difference in path - the models' directory inside the app
         app_model_path = os.path.join(app_path, "models")
         # difference between the app_model_path and model_path
         difference = os.path.relpath(model_path, app_model_path)

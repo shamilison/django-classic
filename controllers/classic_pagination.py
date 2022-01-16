@@ -124,7 +124,7 @@ class ClassicCursorAPIPagination(CursorPagination):
 
     def get_page_size(self, request):
         if request.GET.get('disable_pagination', False):
-            return 500
+            return 5000
         if self.limit_query_param:
             try:
                 return _positive_int(
