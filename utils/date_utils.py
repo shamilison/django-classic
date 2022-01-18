@@ -13,7 +13,7 @@ def group_util(start_date, end_date, period=86400):
     yield end_date
 
 
-def chunk_date_date_range(start_date, end_date, period=86400):
+def chunk_time_range_by_periods(start_date, end_date, period=86400):
     _list_of_dates = list(group_util(start_date, end_date, period))
     # using strftime to convert to user friendly format
     result = []
