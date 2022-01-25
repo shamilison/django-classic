@@ -31,5 +31,7 @@ class ClassicLogger(logging.getLoggerClass()):
         """
         if not settings.CONSOLE_PRINT:
             super(ClassicLogger, self).exception(msg, *args, exc_info=True, **kwargs)
-        else:
+        elif settings.DEBUG:
             raise Exception(msg)
+        else:
+            raise print(msg)
