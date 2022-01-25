@@ -34,4 +34,4 @@ class ClassicLogger(logging.getLoggerClass()):
         elif settings.DEBUG:
             raise Exception(msg)
         else:
-            raise print(msg)
+            print(msg)
