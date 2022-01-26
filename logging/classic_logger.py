@@ -20,18 +20,16 @@ class ClassicLogger(logging.getLoggerClass()):
 
         logger.info("Houston, we have a %s", "interesting problem", exc_info=1)
         """
-        if not settings.CONSOLE_PRINT:
-            super(ClassicLogger, self).info(msg, *args, **kwargs)
-        else:
+        super(ClassicLogger, self).info(msg, *args, **kwargs)
+        if settings.CONSOLE_PRINT:
             print(msg)
 
     def exception(self, msg, *args, exc_info=True, **kwargs):
         """
         Convenience method for logging an ERROR with exception information.
         """
-        if not settings.CONSOLE_PRINT:
-            super(ClassicLogger, self).exception(msg, *args, exc_info=True, **kwargs)
-        elif settings.DEBUG:
+        if settings.DEBUG:
             raise Exception(msg)
-        else:
+        super(ClassicLogger, self).exception(msg, *args, exc_info=True, **kwargs)
+        if settings.CONSOLE_PRINT:
             print(msg)
