@@ -24,6 +24,19 @@ class ClassicLogger(logging.getLoggerClass()):
         if settings.CONSOLE_PRINT:
             print(msg)
 
+    def debug(self, msg, *args, **kwargs):
+        """
+        Log 'msg % args' with severity 'INFO'.
+
+        To pass exception information, use the keyword argument exc_info with
+        a true value, e.g.
+
+        logger.info("Houston, we have a %s", "interesting problem", exc_info=1)
+        """
+        super(ClassicLogger, self).debug(msg, *args, **kwargs)
+        if settings.CONSOLE_PRINT:
+            print(msg)
+
     def exception(self, msg, *args, exc_info=True, **kwargs):
         """
         Convenience method for logging an ERROR with exception information.

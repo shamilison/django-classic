@@ -18,18 +18,18 @@ class AwsS3ActionUtils(object):
         if not default_storage.exists(aws_file_path):
             _file = open(local_file_path, 'rb')
             default_storage.save(aws_file_path, _file)
-            logger.info(f'Uploaded to s3: {file_name}', extra={})
+            logger.debug(f'Uploaded to s3: {file_name}', extra={})
             return True
         else:
-            logger.info(f'Upload ignored as file already exists in s3: {file_name}', extra={})
+            logger.debug(f'Upload ignored as file already exists in s3: {file_name}', extra={})
             return False
 
     @classmethod
     def delete_from_s3(cls, file_key):
         if default_storage.exists(file_key):
             default_storage.delete(file_key)
-            logger.info(f'Deleted from s3: {file_key}', extra={})
+            logger.debug(f'Deleted from s3: {file_key}', extra={})
             return True
         else:
-            logger.info(f'Delete ignored as file not exists in s3: {file_key}', extra={})
+            logger.debug(f'Delete ignored as file not exists in s3: {file_key}', extra={})
             return False
