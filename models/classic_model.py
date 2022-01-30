@@ -48,7 +48,7 @@ class ClassicModel(models.Model):
         return {}
 
     @classmethod
-    def insert_or_update_from_json(cls, json_ob, return_instance=False):
+    def insert_or_update_from_json(cls, json_ob, return_instance=False, **kwargs):
         if not json_ob:
             if return_instance:
                 return ProcessingStatus.CORRUPTED, None
