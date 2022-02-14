@@ -9,7 +9,7 @@ def group_util(start_date, end_date, period=86400):
         for _index in range(math.ceil(_difference.seconds/period)):
             # using generator function to solve problem
             # returns intermediate result
-            yield (start_date + timedelta(seconds=period))
+            yield (start_date + timedelta(seconds=_index * period))
     yield end_date
 
 
