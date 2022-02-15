@@ -6,7 +6,8 @@ def group_util(start_date, end_date, period=86400):
     if _difference.seconds == 0:
         yield start_date
     else:
-        for _index in range(math.ceil(_difference.seconds/period)):
+        _diff_seconds = _difference.days * 24 * 60 * 60 + _difference.seconds
+        for _index in range(math.ceil(_diff_seconds/period)):
             # using generator function to solve problem
             # returns intermediate result
             yield (start_date + timedelta(seconds=_index * period))
