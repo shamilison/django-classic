@@ -12,7 +12,7 @@ def group_util(start_date, end_date, period=86400):
             # using generator function to solve problem
             # returns intermediate result
             yield (start_date + timedelta(seconds=_index * period))
-    yield end_date
+    yield end_date + timedelta(seconds=(period - end_date.timestamp() % period))
 
 
 def group_util_by_days(start_date, end_date, days=1):
