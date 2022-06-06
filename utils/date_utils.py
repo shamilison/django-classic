@@ -4,7 +4,7 @@ from datetime import timedelta
 
 def group_util(start_date, end_date, period=86400):
     _difference = (end_date - start_date)
-    if _difference.seconds == 0:
+    if _difference.days == 0 and _difference.seconds == 0:
         yield start_date
     else:
         _diff_seconds = _difference.days * 24 * 60 * 60 + _difference.seconds
@@ -12,7 +12,7 @@ def group_util(start_date, end_date, period=86400):
             # using generator function to solve problem
             # returns intermediate result
             yield (start_date + timedelta(seconds=_index * period))
-    yield end_date
+    yield end_date + timedelta(seconds=(period - end_date.timestamp() % period))
 
 
 def group_util_by_days(start_date, end_date, days=1):
