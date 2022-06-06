@@ -52,7 +52,7 @@ class ClassicLimitOffsetAPIPagination(LimitOffsetPagination):
         return replace_query_param(url, self.offset_query_param, offset)
 
     def get_limit(self, request):
-        if request.GET.get('disable_pagination', False):
+        if request.GET.get('disable_pagination', False) == '1':
             return 9999999  # self.max_limit
         if self.limit_query_param:
             try:
@@ -123,7 +123,7 @@ class ClassicCursorAPIPagination(CursorPagination):
         self.current_page_len = self.has_next = self.has_previous = None
 
     def get_page_size(self, request):
-        if request.GET.get('disable_pagination', False):
+        if request.GET.get('disable_pagination', False) == '1':
             return 5000
         if self.limit_query_param:
             try:
@@ -160,6 +160,10 @@ class ClassicCursorAPIPagination(CursorPagination):
         return super(ClassicCursorAPIPagination, self).decode_cursor(request)
 
     def paginate_queryset(self, queryset, request, view=None):
+        if request.GET.get('disable_pagination', False) == '1':
+            self.page = list(queryset)
+            self.current_page_len = len(self.page)
+            return self.page
         self.page_size = self.get_page_size(request)
         if not self.page_size:
             return None
