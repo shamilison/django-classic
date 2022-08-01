@@ -22,7 +22,7 @@ class ClassicLogger(logging.getLoggerClass()):
         logger.info("Houston, we have a %s", "interesting problem", exc_info=1)
         """
         super(ClassicLogger, self).info(msg, *args, **kwargs)
-        if settings.CONSOLE_PRINT:
+        if settings.CONSOLE_PRINT and self.parent.level <= logging.INFO:
             print(msg)
 
     def debug(self, msg, *args, **kwargs):
@@ -35,7 +35,7 @@ class ClassicLogger(logging.getLoggerClass()):
         logger.info("Houston, we have a %s", "interesting problem", exc_info=1)
         """
         super(ClassicLogger, self).debug(msg, *args, **kwargs)
-        if settings.CONSOLE_PRINT:
+        if settings.CONSOLE_PRINT and self.parent.level <= logging.DEBUG:
             print(msg)
 
     def exception(self, msg, *args, exc_info=True, send_email=False, **kwargs):
