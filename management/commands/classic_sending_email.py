@@ -2,6 +2,7 @@ __author__ = 'shamilsakib'
 
 import logging
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from django_classic.logging.classic_logger import ClassicLogger
@@ -17,7 +18,8 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        try:
-            raise Exception('Test sending alert email!')
-        except Exception as error:
-            logger.exception(error, send_email=True)
+        from django_classic.controllers.classic_mail import send_classic_email
+        send_classic_email(
+            f'{settings.ERROR_EMAIL_PREFIX}: Test',
+            f'<b>Test Alert.</b>',
+            settings.EMAIL_DEFAULT_FROM, settings.EMAIL_ERROR_SEND_TO.split(','))
