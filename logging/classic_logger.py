@@ -21,6 +21,9 @@ class ClassicLogger(logging.getLoggerClass()):
 
         logger.info("Houston, we have a %s", "interesting problem", exc_info=1)
         """
+        _extras = kwargs.get("extra")
+        if _extras and "message" in _extras:
+            del _extras["message"]
         super(ClassicLogger, self).info(msg, *args, **kwargs)
         if settings.CONSOLE_PRINT:
             print(msg)
