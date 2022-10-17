@@ -60,4 +60,4 @@ class ClassicLogger(logging.getLoggerClass()):
                     f'<b>Exception Alert:</b><br><br>{_error_trace}',
                     settings.EMAIL_DEFAULT_FROM, settings.EMAIL_ERROR_SEND_TO.split(','))
             except Exception as error:
-                print(error)
+                logging.exception(error)
