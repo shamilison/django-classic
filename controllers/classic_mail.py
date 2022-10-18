@@ -55,5 +55,10 @@ def send_classic_email(subject, html_content, from_email, to_email, **kwargs):
             # using print() will also return status code and data
             _result = mailer.send(mail_body)
             logger.info(_result)
+            if int(_result.split("\n")[0]) == 202:
+                return True, 'Email sent!'
+            else:
+                return False, _result.split("\n")[1]
     except Exception as error:
         logger.exception(error)
+        return False, str(error)
