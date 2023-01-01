@@ -18,7 +18,6 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework.response import Response
 
-from django_classic.extras.classic_authentication import ClassicTokenAuthentication, ClassicSessionAuthentication
 from django_classic.extras.classic_renderers import ClassicJSONRenderer
 from django_classic.logging.classic_logger import ClassicLogger
 from django_classic.mixins.classic_view_mixin import ClassicGetViewMixin

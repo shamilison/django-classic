@@ -26,7 +26,7 @@ class ClassicModel(models.Model):
     identifier = models.CharField(max_length=64, default=None, null=True)
 
     # Object state controller
-    is_active = models.BooleanField(default=True, editable=False)
+    is_active = models.BooleanField(default=True)
     is_locked = models.BooleanField(default=False, editable=False)
 
     # Deletion controller

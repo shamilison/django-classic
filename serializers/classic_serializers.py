@@ -2,7 +2,7 @@ __author__ = 'shamilsakib'
 
 from django.contrib.auth import authenticate
 from django.db import transaction
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.exceptions import APIException
@@ -30,22 +30,17 @@ class ClassicTokenSerializer(AuthTokenSerializer):
             message = _('Must include "username" and "password".')
             raise serializers.ValidationError(message, code='authorization')
 
-        if not self.model.objects.filter(username=username).exists():
-            raise APIException(_("Username does not exist in the system."))
-
-        _user = self.model.objects.filter(username=username).first()
+        _user = authenticate(username=username, password=password)
         if not _user:
-            raise APIException(_("User for provided username does not exist in the system."))
-        if _user.is_deleted:
+            raise APIException(_("User for provided username/password does not exist in the system."))
+        elif _user.is_deleted:
             raise APIException(_("User has been deleted from the system."))
-        if not _user.is_active:
+        elif not _user.is_active:
             raise APIException(_("User has been deactivated."))
-
-        user = authenticate(username=username, password=password)
-        if not user.is_active:
+        elif not _user.is_active:
             raise APIException(_('User account is disabled.'))
 
-        attrs['user'] = user
+        attrs['user'] = _user
         return attrs
 
 
@@ -73,4 +68,4 @@ class ClassicModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClassicModel
-        read_only_fields = ['uuid', 'identifier', 'is_locked', 'update_time', 'create_time']
+        read_only_fields = ['uuid', 'identifier', 'is_active', 'is_locked', 'update_time', 'create_time']

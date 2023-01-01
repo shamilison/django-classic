@@ -19,11 +19,11 @@ class ClassicTokenAuthentication(TokenAuthentication):
         model = self.get_model()
         try:
             token = model.objects.get(key=auth_key)
+            if not token.user.is_active:
+                raise exceptions.AuthenticationFailed('User ' + str(token.user.username) + ' inactive or deleted.')
         except model.DoesNotExist:
             raise exceptions.AuthenticationFailed('Invalid token.')
 
-        if not token.user.is_active:
-            raise exceptions.AuthenticationFailed('User ' + str(token.user.username) + ' inactive or deleted.')
         return token.user, token
 
     def attempt_cached_authentication(self, auth_key):
