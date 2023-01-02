@@ -18,6 +18,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework.response import Response
 
+from django_classic.extras.classic_authentication import ClassicTokenAuthentication, ClassicSessionAuthentication
 from django_classic.extras.classic_renderers import ClassicJSONRenderer
 from django_classic.logging.classic_logger import ClassicLogger
 from django_classic.mixins.classic_view_mixin import ClassicGetViewMixin
@@ -28,9 +29,9 @@ logger = logging.getLogger(__name__)
 
 
 class ClassicVersionAPIViewSet(viewsets.GenericViewSet):
-    # authentication_classes = (ClassicTokenAuthentication, ClassicSessionAuthentication,)
+    authentication_classes = (ClassicTokenAuthentication, ClassicSessionAuthentication,)
     # permission_classes = (IsAuthorized,)
-    authentication_classes = ()
+    # authentication_classes = ()
     permission_classes = ()
     renderer_classes = (ClassicJSONRenderer, BrowsableAPIRenderer)
     parser_classes = (MultiPartParser, FormParser, JSONParser,)
