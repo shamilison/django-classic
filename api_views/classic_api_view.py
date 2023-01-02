@@ -15,6 +15,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.exceptions import APIException
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.permissions import DjangoModelPermissionsOrAnonReadOnly
 from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework.response import Response
 
@@ -30,9 +31,9 @@ logger = logging.getLogger(__name__)
 
 class ClassicVersionAPIViewSet(viewsets.GenericViewSet):
     authentication_classes = (ClassicTokenAuthentication, ClassicSessionAuthentication,)
-    # permission_classes = (IsAuthorized,)
+    permission_classes = (DjangoModelPermissionsOrAnonReadOnly,)
     # authentication_classes = ()
-    permission_classes = ()
+    # permission_classes = ()
     renderer_classes = (ClassicJSONRenderer, BrowsableAPIRenderer)
     parser_classes = (MultiPartParser, FormParser, JSONParser,)
 
