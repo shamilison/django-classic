@@ -20,5 +20,5 @@ from django.urls import path
 from django_classic.api_views.classic_api_view import ClassicAPITokenView
 
 urlpatterns = [
-    path('api/v1/login/', ClassicAPITokenView.as_view()),
+    path('v1/login/', ClassicAPITokenView.as_view()),
 ]
