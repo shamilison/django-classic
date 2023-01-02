@@ -26,7 +26,7 @@ class ClassicLogger(logging.getLoggerClass()):
             del _extras["message"]
         super(ClassicLogger, self).info(msg, *args, **kwargs)
         if settings.CONSOLE_PRINT:
-            print(str(msg))
+            print(msg)
 
     def debug(self, msg, *args, **kwargs):
         """
@@ -39,7 +39,7 @@ class ClassicLogger(logging.getLoggerClass()):
         """
         super(ClassicLogger, self).debug(msg, *args, **kwargs)
         if settings.CONSOLE_PRINT:
-            print(str(msg))
+            print(msg)
 
     def exception(self, msg, *args, exc_info=True, send_email=False, **kwargs):
         """
@@ -49,7 +49,7 @@ class ClassicLogger(logging.getLoggerClass()):
             raise Exception(msg)
         super(ClassicLogger, self).exception(msg, *args, exc_info=True, **kwargs)
         if settings.CONSOLE_PRINT:
-            print(str(msg))
+            print(msg)
         if send_email:
             try:
                 from django_classic.controllers.classic_mail import send_classic_email
