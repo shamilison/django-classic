@@ -61,6 +61,12 @@ class ClassicModelSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         with transaction.atomic():
+            _unique_keys = self.Meta.model.get_unique_field_maps(json_ob=validated_data)
+            if _unique_keys:
+                try:
+                    return self.Meta.model.objects.get(**_unique_keys)
+                except self.Meta.model.DoesNotExist:
+                    pass
             return super(ClassicModelSerializer, self).create(validated_data)
 
     def mutate(self, **kwargs):
