@@ -15,7 +15,7 @@ class ClassicCache(object):
         try:
             return cache.get(key)
         except Exception as error:
-            logger.exception(error)
+            # logger.exception(error)
             return None
 
     @classmethod
@@ -23,7 +23,7 @@ class ClassicCache(object):
         try:
             return cache.set(key, value, expiry)
         except Exception as error:
-            logger.exception(error)
+            # logger.exception(error)
             return None
 
     @classmethod

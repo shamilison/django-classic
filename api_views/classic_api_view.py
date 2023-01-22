@@ -123,7 +123,12 @@ class ClassicVersionAPIGetViewSet(ClassicVersionAPIViewSet, ClassicGetViewMixin)
         return response
 
     def get_queryset(self, **kwargs):
-        return super(ClassicVersionAPIGetViewSet, self).get_queryset(**kwargs)
+        queryset = super(ClassicVersionAPIGetViewSet, self).get_queryset(**kwargs)
+        if self.model.select_fields():
+            queryset = queryset.select_related(self.model.select_fields())
+        if self.model.prefetch_fields():
+            queryset = queryset.prefetch_related(self.model.prefetch_fields())
+        return queryset
 
 
 class ClassicVersionAPICreateViewSet(ClassicVersionAPIViewSet, mixins.CreateModelMixin):
@@ -140,7 +145,8 @@ class ClassicVersionAPICreateViewSet(ClassicVersionAPIViewSet, mixins.CreateMode
     def create(self, request, *args, **kwargs):
         try:
             serializer = self.get_serializer(
-                data=request.data, many=isinstance(request.data, list))
+                data=request.data, many=isinstance(request.data, list),
+                extras=self.model.get_api_extras(request=request, category="create"))
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
@@ -149,7 +155,12 @@ class ClassicVersionAPICreateViewSet(ClassicVersionAPIViewSet, mixins.CreateMode
             raise APIException(error)
 
     def get_queryset(self, **kwargs):
-        return self.model.objects.all()
+        queryset = self.model.objects
+        if self.model.select_fields():
+            queryset = queryset.select_related(self.model.select_fields())
+        if self.model.prefetch_fields():
+            queryset = queryset.prefetch_related(self.model.prefetch_fields())
+        return queryset.all()
 
 
 class ClassicVersionAPIUpdateViewSet(ClassicVersionAPIViewSet, mixins.UpdateModelMixin):
@@ -170,7 +181,12 @@ class ClassicVersionAPIUpdateViewSet(ClassicVersionAPIViewSet, mixins.UpdateMode
             raise APIException(error)
 
     def get_queryset(self, **kwargs):
-        return self.model.objects.all()
+        queryset = self.model.objects
+        if self.model.select_fields():
+            queryset = queryset.select_related(self.model.select_fields())
+        if self.model.prefetch_fields():
+            queryset = queryset.prefetch_related(self.model.prefetch_fields())
+        return queryset.all()
 
 
 class ClassicVersionAPIDestroyViewSet(ClassicVersionAPIViewSet, mixins.DestroyModelMixin):

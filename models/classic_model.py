@@ -44,6 +44,14 @@ class ClassicModel(models.Model):
         abstract = True
 
     @classmethod
+    def prefetch_fields(cls):
+        return None
+
+    @classmethod
+    def select_fields(cls):
+        return None
+
+    @classmethod
     def get_unique_field_maps(cls, json_ob):
         return {}
 
@@ -120,3 +128,7 @@ class ClassicModel(models.Model):
             self.is_active = True
             self.is_deleted = False
         self.save(**kwargs)
+
+    @classmethod
+    def get_api_extras(cls, **kwargs):
+        return None
