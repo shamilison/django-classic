@@ -1,13 +1,12 @@
 import base64
 import json
 from time import sleep
-from urllib.request import urlopen
 
 import requests
 
 CAPTCHA_COOKIE_HOST = 'https://wafid.com/book-appointment/'
-CAPTCHA_SOLVER_HOST = 'https://2captcha.com'
-CAPTCHA_SOLVER_API_SECRET = 'd217dfd21af07dda329436e8de9a5953'
+CAPTCHA_SOLVER_HOST = 'https://api.captchas.io'
+CAPTCHA_SOLVER_API_SECRET = '64d5a860-627b8c2c357949.25443534'
 
 
 class CaptchaSolver(object):
