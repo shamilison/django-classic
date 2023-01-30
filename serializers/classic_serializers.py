@@ -2,7 +2,7 @@ __author__ = 'shamilsakib'
 
 from django.contrib.auth import authenticate
 from django.db import transaction
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.exceptions import APIException
