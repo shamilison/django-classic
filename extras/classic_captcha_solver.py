@@ -12,6 +12,7 @@ class CaptchaSolver(object):
         _solved_code = None
         _form_data = {
             "method": "base64",
+            "numeric": 1,
             "key": captcha_secret,
             "body": base64.b64encode(session.get(captcha_url).content).decode('utf-8'),
             "json": "1",
