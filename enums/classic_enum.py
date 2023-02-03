@@ -35,3 +35,10 @@ class ClassicEnum(Enum):
         for e in cls:
             options.append(e.value)
         return options
+
+    @classmethod
+    def get_name_by_value(cls, value):
+        for e in cls:
+            if e.value == value:
+                return e.name
+        return 'Undefined'

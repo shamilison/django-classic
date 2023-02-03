@@ -45,8 +45,8 @@ class ClassicLogger(logging.getLoggerClass()):
         """
         Convenience method for logging an ERROR with exception information.
         """
-        if settings.DEBUG:
-            raise Exception(msg)
+        # if settings.DEBUG:
+        #     raise Exception(msg)
         super(ClassicLogger, self).exception(msg, *args, exc_info=True, **kwargs)
         if settings.CONSOLE_PRINT:
             print(msg)
