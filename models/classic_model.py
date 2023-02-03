@@ -76,7 +76,7 @@ class ClassicModel(models.Model):
         except Exception as error:
             logger.exception(error)
             if return_instance:
-                return ProcessingStatus.ERROR, None
+                return ProcessingStatus.ERROR, error
             return ProcessingStatus.ERROR
 
     @classmethod
