@@ -40,6 +40,10 @@ class ClassicModel(models.Model):
     update_time = models.DateTimeField(default=timezone.localtime)
     create_time = models.DateTimeField(editable=False, default=timezone.localtime)
 
+    # Creator
+    created_by = models.ForeignKey('django_classic.ClassicSystemUser', default=None,
+                                   null=True, on_delete=models.SET_NULL)
+
     class Meta:
         abstract = True
 

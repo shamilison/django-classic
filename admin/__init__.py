@@ -1,0 +1,1 @@
+from .registers.classic_user_admin import ClassicSystemUserAdmin
