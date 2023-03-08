@@ -18,6 +18,18 @@ logger = logging.getLogger(__name__)
 get_model = apps.get_model
 
 
+class ClassicQuerySet(models.query.QuerySet):
+
+    def delete(self):
+        return self.update(is_deleted=True, deleted_level=1)
+
+
+class ClassicModelManager(models.Manager):
+    def get_queryset(self):
+        _queryset = ClassicQuerySet(model=self.model, using=self._db, hints=self._hints)
+        return _queryset.filter(is_deleted=False)
+
+
 class ClassicModel(models.Model):
     # Scalable unique value and primary key
     uuid = models.CharField(max_length=64, default=uuid.uuid4, primary_key=True)
@@ -43,6 +55,8 @@ class ClassicModel(models.Model):
     # Creator
     created_by = models.ForeignKey('django_classic.ClassicSystemUser', default=None,
                                    null=True, on_delete=models.SET_NULL)
+
+    objects = ClassicModelManager()
 
     class Meta:
         abstract = True
